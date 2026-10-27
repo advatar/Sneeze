@@ -43,7 +43,11 @@ a straight-alpha output buffer it owns. A scene may hold many; the owning
   percentage. Documents that inset a rounded card with both must set
   `box-sizing: border-box` (and `display: block`) or the border box runs off the
   right and bottom of the canvas and those two radii are clipped square.
-- `Render(ENGINE*, w, h)` rasterizes the document into the canvas. It resolves
+- `Render(ENGINE*, w, h, dDensity)` rasterizes the document into the canvas.
+  `dDensity` is RmlUi's dp-to-px ratio (values below 1 are treated as 1). CSS
+  `px` stays one texture pixel; CSS `dp` scales with the ratio, so a document
+  written in `dp` keeps its layout when the raster is larger than the layout
+  size. A change of dimensions or density marks the canvas dirty. It resolves
   the engine's `UI_CONTEXT` and shared `UI_RENDER`, creates the context lazily
   **bound to the shared `UI_RENDER`** (`Rml::CreateContext(name, dims, pUi_Render)`), then on the dirty
   path resizes the shared canvas to this panel, `Update()`s, clears, `Render()`s,
@@ -68,8 +72,10 @@ and keep the first raster's alpha so rounded corners stay transparent. See
 
 A CPU implementation of `Rml::RenderInterface`. It rasterizes RmlUi's 2D triangle
 geometry into an RGBA8 canvas (**premultiplied alpha**, row-major, top-down),
-with a top-left fill rule (no double-drawn shared edges), texture sampling
-(text/atlas), scissor clipping, and a CPU clip-mask stencil (so `overflow` plus
+with a top-left fill rule (no double-drawn shared edges), bilinear texture
+sampling (texel-centered, clamp to edge; font atlases are coverage masks, and a
+nearest tap is what made glyphs look uneven before the GPU's linear filter),
+scissor clipping, and a CPU clip-mask stencil (so `overflow` plus
 `border-radius` clips children to the rounded shape). Optional layer/filter/shader
 hooks keep their no-op defaults, so soft-glow/blur effects are deferred to a
 future GPU path. `DrawCount()/DrawTextured()` are per-pass diagnostics reset on
