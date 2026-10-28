@@ -181,6 +181,11 @@ find_package (JwtCpp REQUIRED)
 # consumer-side SPIRV-Cross discovery using SpirvCross_ROOT as a hint,
 # so we don't need a Sneeze-local FindVox / FindSpirvCross module.
 set (SpirvCross_ROOT "${LIBS_DIR}/SPIRV-Cross/install")
+if (APPLE)
+   # Match deps/vox.cmake: the Apple archive uses Metal. Vox's package config
+   # otherwise adds a system Vulkan loader even when Vox was built without it.
+   set (CMAKE_DISABLE_FIND_PACKAGE_Vulkan TRUE)
+endif ()
 find_package (Vox CONFIG REQUIRED
    PATHS "${LIBS_DIR}/Vox/install"
    NO_DEFAULT_PATH)

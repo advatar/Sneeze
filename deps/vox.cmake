@@ -12,6 +12,11 @@
 # FindSpirvCross module is needed on the Sneeze side.
 
 set (VOX_EXTRA_ARGS)
+if (APPLE)
+   # Use native Metal. A Homebrew Vulkan loader may contain only the host
+   # architecture and cannot be linked into a universal macOS build.
+   list (APPEND VOX_EXTRA_ARGS -DCMAKE_DISABLE_FIND_PACKAGE_Vulkan=TRUE)
+endif ()
 if (WIN32)
    # Vox vendors no runtime; match curl/boringssl so Release links against
    # the DLL runtime and Debug against the Debug DLL runtime.
